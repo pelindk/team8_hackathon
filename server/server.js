@@ -271,7 +271,7 @@ io.on('connection', (socket) => {
   });
 
   // Handle join tournament
-  socket.on(MESSAGE_TYPES.JOIN_TOURNAMENT, (data) => {
+  socket.on(MESSAGE_TYPES.JOIN_TOURNAMENT, async (data) => {
     const { tournamentId, playerName } = data;
     const player = connectedPlayers.get(socket.id);
     player.name = playerName || `Player ${socket.id.substring(0, 4)}`;
@@ -303,7 +303,7 @@ io.on('connection', (socket) => {
   });
 
   // Handle update tournament settings
-  socket.on(MESSAGE_TYPES.UPDATE_TOURNAMENT_SETTINGS, (data) => {
+  socket.on(MESSAGE_TYPES.UPDATE_TOURNAMENT_SETTINGS, async (data) => {
     const { settings } = data;
     const player = connectedPlayers.get(socket.id);
     
