@@ -94,7 +94,12 @@
       padding: 10px 15px;
       border-radius: 25px;
       backdrop-filter: blur(10px);
-      z-index: 1000;
+      z-index: 999;
+      pointer-events: auto;
+    }
+
+    .user-profile * {
+      pointer-events: auto;
     }
 
     .user-profile-name {
@@ -510,6 +515,12 @@
       display: flex;
       flex-direction: column;
       gap: 30px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .waiting-room * {
+      position: relative;
     }
 
     .waiting-room-header {
@@ -614,6 +625,13 @@
       justify-content: center;
       gap: 20px;
       align-items: center;
+      position: relative;
+      z-index: 100;
+    }
+
+    .waiting-room-footer .btn {
+      position: relative;
+      z-index: 100;
     }
 
     .waiting-message {
