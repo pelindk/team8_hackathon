@@ -286,14 +286,18 @@ io.on('connection', (socket) => {
     player.currentTournament = tournamentId;
     socket.join(tournamentId);
 
-    // Notify all players in waiting room
+    // Notify all players in waiting room with their individual host status
     const tournament = tournamentManager.getTournament(tournamentId);
-    io.to(tournamentId).emit(MESSAGE_TYPES.WAITING_ROOM_UPDATE, {
-      tournamentId: tournament.id,
-      players: tournament.players,
-      isHost: socket.id === tournament.hostId,
-      settings: tournament.settings
-    });
+    const socketsInRoom = await io.in(tournamentId).fetchSockets();
+    
+    for (const clientSocket of socketsInRoom) {
+      clientSocket.emit(MESSAGE_TYPES.WAITING_ROOM_UPDATE, {
+        tournamentId: tournament.id,
+        players: tournament.players,
+        isHost: clientSocket.id === tournament.hostId,
+        settings: tournament.settings
+      });
+    }
 
     console.log(`${player.name} joined tournament ${tournamentId}`);
   });
@@ -315,14 +319,18 @@ io.on('connection', (socket) => {
       return;
     }
 
-    // Notify all players
+    // Notify all players with their individual host status
     const tournament = tournamentManager.getTournament(player.currentTournament);
-    io.to(player.currentTournament).emit(MESSAGE_TYPES.WAITING_ROOM_UPDATE, {
-      tournamentId: tournament.id,
-      players: tournament.players,
-      isHost: socket.id === tournament.hostId,
-      settings: tournament.settings
-    });
+    const socketsInRoom = await io.in(player.currentTournament).fetchSockets();
+    
+    for (const clientSocket of socketsInRoom) {
+      clientSocket.emit(MESSAGE_TYPES.WAITING_ROOM_UPDATE, {
+        tournamentId: tournament.id,
+        players: tournament.players,
+        isHost: clientSocket.id === tournament.hostId,
+        settings: tournament.settings
+      });
+    }
   });
 
   // Handle start tournament
