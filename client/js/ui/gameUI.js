@@ -405,7 +405,6 @@ class GameUI {
         </div>
         
         <div id="game-message"></div>
-        
         <button class="forfeit-btn" id="forfeit-game">Forfeit Match</button>
       </div>
     `;
