@@ -66,7 +66,15 @@ class RPSGame {
   setupEventHandlers() {
     // Waiting room updates
     this.gameClient.on('waiting_room_update', (data) => {
-      this.waitingRoomUI.show(data);
+      // Check if waiting room is already visible
+      const waitingRoom = document.querySelector('.waiting-room');
+      if (waitingRoom) {
+        // Just update the data, don't re-render everything
+        this.waitingRoomUI.update(data);
+      } else {
+        // First time showing, do full render
+        this.waitingRoomUI.show(data);
+      }
     });
 
     // Tournament started

@@ -126,6 +126,13 @@ class WaitingRoomUI {
 
     // Start tournament button
     document.getElementById('start-tournament-btn')?.addEventListener('click', () => {
+      // Validate minimum players
+      if (!this.settings.aiFill && this.players.length < 2) {
+        this.soundEngine.playError();
+        this.showToast('Need at least 2 players to start! Enable AI Fill or wait for more players.');
+        return;
+      }
+      
       this.soundEngine.playSelect();
       this.gameClient.startTournament();
     });
@@ -179,6 +186,7 @@ class WaitingRoomUI {
   update(data) {
     this.players = data.players;
     this.settings = data.settings;
+    this.isHost = data.isHost; // Update host status
     
     // Update players list
     const playersList = document.getElementById('players-list');
@@ -192,6 +200,23 @@ class WaitingRoomUI {
       if (settingsPreview) {
         settingsPreview.outerHTML = this.renderHostControls();
       }
+    }
+
+    // Update footer buttons based on host status
+    const footer = document.querySelector('.waiting-room-footer');
+    if (footer) {
+      footer.innerHTML = `
+        ${this.isHost ? `
+          <button class="btn" id="customize-btn">⚙️ Customize</button>
+          <button class="btn btn-primary" id="start-tournament-btn">🚀 START</button>
+        ` : `
+          <div class="waiting-message">Waiting for host to start...</div>
+        `}
+        <button class="btn btn-secondary" id="leave-waiting-room">Leave</button>
+      `;
+      
+      // Re-attach event listeners for the new buttons
+      this.attachEventListeners();
     }
   }
 
