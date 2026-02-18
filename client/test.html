@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Connection Test</title>
+</head>
+<body>
+  <h1>Testing Connection...</h1>
+  <div id="status">Checking...</div>
+  <div id="log"></div>
+
+  <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+  <script>
+    const log = document.getElementById('log');
+    const status = document.getElementById('status');
+    
+    function addLog(msg) {
+      console.log(msg);
+      log.innerHTML += '<p>' + msg + '</p>';
+    }
+
+    addLog('1. Socket.io loaded: ' + (typeof io !== 'undefined'));
+    addLog('2. Connecting to: ' + window.location.origin);
+
+    if (typeof io !== 'undefined') {
+      const socket = io(window.location.origin);
+      
+      socket.on('connect', () => {
+        addLog('3. ✅ Connected! Socket ID: ' + socket.id);
+        status.innerHTML = '✅ Connected Successfully!';
+        status.style.color = 'green';
+      });
+
+      socket.on('connect_error', (error) => {
+        addLog('3. ❌ Connection Error: ' + error.message);
+        status.innerHTML = '❌ Connection Failed';
+        status.style.color = 'red';
+      });
+
+      socket.on('disconnect', () => {
+        addLog('Disconnected');
+        status.innerHTML = '⚠️ Disconnected';
+        status.style.color = 'orange';
+      });
+    } else {
+      addLog('❌ Socket.io not loaded!');
+      status.innerHTML = '❌ Socket.io not loaded';
+      status.style.color = 'red';
+    }
+  </script>
+</body>
+</html>

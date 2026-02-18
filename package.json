@@ -1,0 +1,18 @@
+{
+  "name": "rps-multiplayer-game",
+  "version": "1.0.0",
+  "description": "Rock Paper Scissors multiplayer game with pattern-learning AI and tournament mode",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "node server/server.js"
+  },
+  "keywords": ["rock-paper-scissors", "multiplayer", "websocket", "game"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.0",
+    "socket.io": "^4.6.0",
+    "uuid": "^9.0.0"
+  }
+}
