@@ -222,11 +222,14 @@ class GameUI {
     this.tieCount = 0;
     this.currentRound = 1;
     
+    const opponentName = gameData.opponent || 'Opponent';
+    const yourName = gameData.yourName || 'You';
+    
     const gameHTML = `
       <div class="game-screen">
         <div class="game-header">
           <div class="player-info">
-            <h3>You</h3>
+            <h3>${yourName}</h3>
             <div class="score" id="player-score">0</div>
           </div>
           <div class="round-info">
@@ -234,7 +237,7 @@ class GameUI {
             <div id="tie-display" style="font-size: 0.9em; opacity: 0.8; margin-top: 5px;">Ties: 0</div>
           </div>
           <div class="player-info">
-            <h3>${gameData.opponent || 'Opponent'}</h3>
+            <h3>${opponentName}</h3>
             <div class="score" id="opponent-score">0</div>
           </div>
         </div>

@@ -69,6 +69,14 @@ io.on('connection', (socket) => {
       // Add to matchmaking queue
       matchmakingQueue.push(socket.id);
       
+      // Notify all waiting players about queue size
+      matchmakingQueue.forEach(playerId => {
+        io.to(playerId).emit(MESSAGE_TYPES.GAME_STATE, {
+          state: 'waiting',
+          message: `Searching for opponent... (${matchmakingQueue.length} player${matchmakingQueue.length > 1 ? 's' : ''} in queue)`
+        });
+      });
+      
       // Try to match players
       if (matchmakingQueue.length >= 2) {
         const player1Id = matchmakingQueue.shift();
@@ -86,20 +94,24 @@ io.on('connection', (socket) => {
         io.to(player1Id).socketsJoin(gameId);
         io.to(player2Id).socketsJoin(gameId);
         
-        io.to(gameId).emit(MESSAGE_TYPES.GAME_STATE, {
+        // Send personalized game state to each player
+        io.to(player1Id).emit(MESSAGE_TYPES.GAME_STATE, {
           gameId,
           mode: GAME_MODES.QUICK_MATCH,
-          player1: player1.name,
-          player2: player2.name,
+          opponent: player2.name,
+          yourName: player1.name,
+          state: 'playing'
+        });
+        
+        io.to(player2Id).emit(MESSAGE_TYPES.GAME_STATE, {
+          gameId,
+          mode: GAME_MODES.QUICK_MATCH,
+          opponent: player1.name,
+          yourName: player2.name,
           state: 'playing'
         });
 
         console.log(`Match created: ${player1.name} vs ${player2.name}`);
-      } else {
-        socket.emit(MESSAGE_TYPES.GAME_STATE, {
-          state: 'waiting',
-          message: 'Searching for opponent...'
-        });
       }
     }
   });
