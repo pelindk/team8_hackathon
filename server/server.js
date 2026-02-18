@@ -171,7 +171,8 @@ io.on('connection', (socket) => {
               const stats = gameEngine.getGameStats(player.currentGame);
               io.to(player.currentGame).emit(MESSAGE_TYPES.MATCH_COMPLETE, {
                 winner: result.gameWinner,
-                stats
+                stats,
+                mode: 'ai'
               });
 
               // Create replay
@@ -224,7 +225,8 @@ io.on('connection', (socket) => {
               const stats = gameEngine.getGameStats(player.currentGame);
               io.to(player.currentGame).emit(MESSAGE_TYPES.MATCH_COMPLETE, {
                 winner: result.gameWinner,
-                stats
+                stats,
+                mode: 'quickmatch'
               });
 
               // Get player names

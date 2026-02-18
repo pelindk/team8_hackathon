@@ -47,8 +47,52 @@ class GameUI {
 
   init() {
     this.setupEventListeners();
-    this.updateUserProfile();
-    this.showMainMenu();
+    
+    // If no name is saved, prompt for it immediately
+    if (!this.playerName) {
+      this.showInitialNamePrompt();
+    } else {
+      this.updateUserProfile();
+      this.showMainMenu();
+    }
+  }
+
+  showInitialNamePrompt() {
+    const promptHTML = `
+      <div class="initial-name-screen">
+        <h1 class="game-title">Rock Paper Scissors</h1>
+        <div class="name-prompt-container">
+          <h2>Welcome! What's your name?</h2>
+          <input type="text" id="initial-player-name" placeholder="Enter your name" maxlength="20" />
+          <button class="btn btn-primary" id="confirm-initial-name">Let's Play!</button>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('ui-container').innerHTML = promptHTML;
+
+    const input = document.getElementById('initial-player-name');
+    input.focus();
+
+    const confirm = () => {
+      const name = input.value.trim();
+      if (name) {
+        this.savePlayerName(name);
+        this.soundEngine.playSelect();
+        this.updateUserProfile();
+        this.showMainMenu();
+      } else {
+        input.style.borderColor = 'red';
+        setTimeout(() => {
+          input.style.borderColor = '';
+        }, 500);
+      }
+    };
+
+    document.getElementById('confirm-initial-name').addEventListener('click', confirm);
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') confirm();
+    });
   }
 
   setupEventListeners() {
@@ -118,7 +162,11 @@ class GameUI {
 
     document.getElementById('create-tournament').addEventListener('click', () => {
       this.soundEngine.playClick();
-      this.showPlayerNamePrompt('create-tournament');
+      if (this.playerName) {
+        this.gameClient.createTournament(this.playerName);
+      } else {
+        this.showPlayerNamePrompt('create-tournament');
+      }
     });
 
     document.getElementById('join-tournament').addEventListener('click', () => {
@@ -250,7 +298,13 @@ class GameUI {
       if (!tournamentId) return;
       
       document.querySelector('.prompt-overlay').remove();
-      this.showPlayerNamePrompt(`join-tournament:${tournamentId}`);
+      
+      // Use saved name if available
+      if (this.playerName) {
+        this.gameClient.joinTournament(tournamentId, this.playerName);
+      } else {
+        this.showPlayerNamePrompt(`join-tournament:${tournamentId}`);
+      }
     };
 
     document.getElementById('confirm-join').addEventListener('click', confirm);
@@ -265,7 +319,20 @@ class GameUI {
   }
 
   startGame(mode) {
-    this.showPlayerNamePrompt(mode);
+    // Use saved name directly instead of prompting
+    if (this.playerName) {
+      this.gameClient.joinGame(mode, this.playerName);
+    } else {
+      this.showPlayerNamePrompt(mode);
+    }
+  }
+
+  handleForfeit() {
+    const confirmForfeit = confirm('Are you sure you want to forfeit this match?');
+    if (confirmForfeit) {
+      this.soundEngine.playError();
+      this.showMainMenu();
+    }
   }
 
   handleGameState(data) {
@@ -338,10 +405,17 @@ class GameUI {
         </div>
         
         <div id="game-message"></div>
+        
+        <button class="forfeit-btn" id="forfeit-game">Forfeit Match</button>
       </div>
     `;
 
     document.getElementById('ui-container').innerHTML = gameHTML;
+
+    // Add forfeit button listener
+    document.getElementById('forfeit-game')?.addEventListener('click', () => {
+      this.handleForfeit();
+    });
 
     // Setup move buttons
     document.querySelectorAll('.move-btn').forEach(btn => {
@@ -471,17 +545,56 @@ class GameUI {
   }
 
   handleMatchComplete(data) {
-    const message = data.winner === 'player1' ? 
-      '🎉 You won the match!' : 
-      data.winner === 'player2' ?
-      '😔 You lost the match' :
-      '🤝 Match tied!';
+    const isWinner = data.winner === 'player1';
+    const isTie = data.winner === 'tie';
+    
+    const resultHTML = `
+      <div class="match-complete-screen">
+        <div class="match-result">
+          <h1 class="result-title ${isWinner ? 'winner' : isTie ? 'tie' : 'loser'}">
+            ${isWinner ? '🎉 Victory!' : isTie ? '🤝 Tied Match!' : '😔 Defeat'}
+          </h1>
+          <div class="final-score">
+            <div class="score-display">
+              <span class="score-label">You</span>
+              <span class="score-value">${this.playerScore}</span>
+            </div>
+            <div class="score-divider">-</div>
+            <div class="score-display">
+              <span class="score-label">Opponent</span>
+              <span class="score-value">${this.opponentScore}</span>
+            </div>
+          </div>
+          ${this.tieCount > 0 ? `<div class="tie-count">Ties: ${this.tieCount}</div>` : ''}
+          <div class="match-actions">
+            <button class="btn btn-primary" id="play-again">Play Again</button>
+            <button class="btn btn-secondary" id="back-to-lobby">Back to Lobby</button>
+          </div>
+        </div>
+      </div>
+    `;
 
-    this.showGameMessage(message);
+    document.getElementById('ui-container').innerHTML = resultHTML;
 
-    setTimeout(() => {
+    // Play appropriate sound
+    if (isWinner) {
+      this.soundEngine.playChampion();
+    } else if (!isTie) {
+      this.soundEngine.playLose();
+    }
+
+    // Add event listeners
+    document.getElementById('play-again')?.addEventListener('click', () => {
+      this.soundEngine.playClick();
+      // Restart same game mode
+      const lastMode = data.mode || 'ai';
+      this.gameClient.joinGame(lastMode, this.playerName);
+    });
+
+    document.getElementById('back-to-lobby')?.addEventListener('click', () => {
+      this.soundEngine.playClick();
       this.showMainMenu();
-    }, 3000);
+    });
   }
 
   resetMoveButtons() {
