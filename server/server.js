@@ -456,7 +456,7 @@ function startNextTournamentMatches(tournamentId) {
 
   const nextMatches = tournamentManager.getNextMatches(tournamentId);
   
-  // Start matches (for now, just notify - actual game logic would go here)
+  // Start matches
   nextMatches.forEach(match => {
     if (match.status === 'pending') {
       match.status = 'in_progress';
@@ -473,11 +473,45 @@ function startNextTournamentMatches(tournamentId) {
         tournament.settings.winCondition
       );
 
-      // Notify players
+      // Update player's current game
+      const player1 = connectedPlayers.get(match.player1.id);
+      if (player1) {
+        player1.currentGame = gameId;
+      }
+      
+      if (!match.player2.isAI) {
+        const player2 = connectedPlayers.get(match.player2.id);
+        if (player2) {
+          player2.currentGame = gameId;
+        }
+      }
+
+      // Notify all spectators about bracket update
       io.to(tournamentId).emit(MESSAGE_TYPES.TOURNAMENT_UPDATE, {
         bracket: tournament.bracket,
         currentMatch: match
       });
+
+      // Send GAME_START to the actual players in the match
+      io.to(match.player1.id).emit(MESSAGE_TYPES.GAME_START, {
+        gameId: gameId,
+        opponent: match.player2.name,
+        isAI: match.player2.isAI,
+        winCondition: tournament.settings.winCondition,
+        isTournament: true
+      });
+
+      if (!match.player2.isAI) {
+        io.to(match.player2.id).emit(MESSAGE_TYPES.GAME_START, {
+          gameId: gameId,
+          opponent: match.player1.name,
+          isAI: false,
+          winCondition: tournament.settings.winCondition,
+          isTournament: true
+        });
+      }
+
+      console.log(`Started tournament match: ${match.player1.name} vs ${match.player2.name}`);
     }
   });
 }
