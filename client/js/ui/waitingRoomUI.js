@@ -117,6 +117,24 @@ class WaitingRoomUI {
         this.fallbackCopyToClipboard(id);
       }
     });
+
+    // Customize button
+    document.getElementById('customize-btn')?.addEventListener('click', () => {
+      this.soundEngine.playClick();
+      this.showCustomizePanel();
+    });
+
+    // Start tournament button
+    document.getElementById('start-tournament-btn')?.addEventListener('click', () => {
+      this.soundEngine.playSelect();
+      this.gameClient.startTournament();
+    });
+
+    // Leave button
+    document.getElementById('leave-waiting-room')?.addEventListener('click', () => {
+      this.soundEngine.playClick();
+      window.location.reload();
+    });
   }
 
   fallbackCopyToClipboard(text) {
@@ -144,28 +162,6 @@ class WaitingRoomUI {
     document.body.removeChild(textArea);
   }
 
-  reattachEventListeners() {
-    // Re-attach copy button after updates
-
-    // Customize button
-    document.getElementById('customize-btn')?.addEventListener('click', () => {
-      this.soundEngine.playClick();
-      this.showCustomizePanel();
-    });
-
-    // Start tournament button
-    document.getElementById('start-tournament-btn')?.addEventListener('click', () => {
-      this.soundEngine.playSelect();
-      this.gameClient.startTournament();
-    });
-
-    // Leave button
-    document.getElementById('leave-waiting-room')?.addEventListener('click', () => {
-      this.soundEngine.playClick();
-      // Disconnect and return to menu
-      window.location.reload();
-    });
-  }
 
   showCustomizePanel() {
     const customizeUI = new CustomizeUI(this.gameClient, this.soundEngine, this.settings);
