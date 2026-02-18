@@ -102,11 +102,50 @@ class WaitingRoomUI {
     // Copy tournament ID
     document.getElementById('copy-tournament-id')?.addEventListener('click', () => {
       const id = this.tournamentId;
-      navigator.clipboard.writeText(id).then(() => {
+      
+      // Try modern clipboard API first
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(id).then(() => {
+          this.soundEngine.playSelect();
+          this.showToast('Tournament ID copied!');
+        }).catch(err => {
+          console.error('Clipboard error:', err);
+          this.fallbackCopyToClipboard(id);
+        });
+      } else {
+        // Fallback for older browsers
+        this.fallbackCopyToClipboard(id);
+      }
+    });
+  }
+
+  fallbackCopyToClipboard(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+      const successful = document.execCommand('copy');
+      if (successful) {
         this.soundEngine.playSelect();
         this.showToast('Tournament ID copied!');
-      });
-    });
+      } else {
+        this.showToast('Failed to copy. ID: ' + text);
+      }
+    } catch (err) {
+      console.error('Fallback copy failed:', err);
+      this.showToast('Copy failed. ID: ' + text);
+    }
+    
+    document.body.removeChild(textArea);
+  }
+
+  reattachEventListeners() {
+    // Re-attach copy button after updates
 
     // Customize button
     document.getElementById('customize-btn')?.addEventListener('click', () => {

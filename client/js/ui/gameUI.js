@@ -10,10 +10,44 @@ class GameUI {
     this.opponentScore = 0;
     this.tieCount = 0;
     this.currentRound = 1;
+    this.playerName = this.loadPlayerName();
+  }
+
+  loadPlayerName() {
+    return localStorage.getItem('rps_player_name') || null;
+  }
+
+  savePlayerName(name) {
+    localStorage.setItem('rps_player_name', name);
+    this.playerName = name;
+    this.updateUserProfile();
+  }
+
+  updateUserProfile() {
+    const existingProfile = document.getElementById('user-profile');
+    if (existingProfile) {
+      existingProfile.remove();
+    }
+
+    if (this.playerName) {
+      const profileHTML = `
+        <div class="user-profile" id="user-profile">
+          <span class="user-profile-name">👤 ${this.playerName}</span>
+          <button class="user-profile-btn" id="change-name-btn">Change</button>
+        </div>
+      `;
+      document.body.insertAdjacentHTML('beforeend', profileHTML);
+
+      document.getElementById('change-name-btn')?.addEventListener('click', () => {
+        this.soundEngine.playClick();
+        this.showChangeNamePrompt();
+      });
+    }
   }
 
   init() {
     this.setupEventListeners();
+    this.updateUserProfile();
     this.showMainMenu();
   }
 
@@ -104,11 +138,13 @@ class GameUI {
   }
 
   showPlayerNamePrompt(action) {
+    const savedName = this.playerName || '';
+    
     const promptHTML = `
       <div class="prompt-overlay">
         <div class="prompt-box">
           <h2>Enter Your Name</h2>
-          <input type="text" id="player-name" placeholder="Player Name" maxlength="20" />
+          <input type="text" id="player-name" placeholder="Player Name" maxlength="20" value="${savedName}" />
           <div class="prompt-buttons">
             <button class="btn" id="confirm-name">Continue</button>
             <button class="btn btn-secondary" id="cancel-prompt">Cancel</button>
@@ -121,9 +157,11 @@ class GameUI {
 
     const input = document.getElementById('player-name');
     input.focus();
+    input.select();
 
     const confirm = () => {
       const name = input.value.trim() || 'Player';
+      this.savePlayerName(name);
       this.soundEngine.playSelect();
       document.querySelector('.prompt-overlay').remove();
       
@@ -143,6 +181,46 @@ class GameUI {
     });
 
     document.getElementById('cancel-prompt').addEventListener('click', () => {
+      this.soundEngine.playClick();
+      document.querySelector('.prompt-overlay').remove();
+    });
+  }
+
+  showChangeNamePrompt() {
+    const promptHTML = `
+      <div class="prompt-overlay">
+        <div class="prompt-box">
+          <h2>Change Your Name</h2>
+          <input type="text" id="new-player-name" placeholder="New Name" maxlength="20" value="${this.playerName || ''}" />
+          <div class="prompt-buttons">
+            <button class="btn" id="confirm-new-name">Save</button>
+            <button class="btn btn-secondary" id="cancel-new-name">Cancel</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', promptHTML);
+
+    const input = document.getElementById('new-player-name');
+    input.focus();
+    input.select();
+
+    const confirm = () => {
+      const name = input.value.trim();
+      if (name) {
+        this.savePlayerName(name);
+        this.soundEngine.playSelect();
+        document.querySelector('.prompt-overlay').remove();
+      }
+    };
+
+    document.getElementById('confirm-new-name').addEventListener('click', confirm);
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') confirm();
+    });
+
+    document.getElementById('cancel-new-name').addEventListener('click', () => {
       this.soundEngine.playClick();
       document.querySelector('.prompt-overlay').remove();
     });

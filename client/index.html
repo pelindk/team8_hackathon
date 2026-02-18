@@ -83,6 +83,40 @@
       gap: 20px;
     }
 
+    .user-profile {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 10px 15px;
+      border-radius: 25px;
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+    }
+
+    .user-profile-name {
+      font-weight: bold;
+      color: #fff;
+    }
+
+    .user-profile-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      padding: 5px 10px;
+      border-radius: 15px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.9em;
+      transition: all 0.3s ease;
+    }
+
+    .user-profile-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
     .icon-btn {
       width: 50px;
       height: 50px;
@@ -307,11 +341,21 @@
 
     .prompt-buttons .btn {
       flex: 1;
-      color: #333;
     }
     
-    .prompt-buttons .btn:hover {
+    .prompt-box .btn {
+      background: rgba(102, 126, 234, 0.8);
+      border-color: rgba(102, 126, 234, 1);
       color: #fff;
+    }
+    
+    .prompt-box .btn:hover {
+      background: rgba(102, 126, 234, 1);
+    }
+    
+    .prompt-box .btn-secondary {
+      background: rgba(0, 0, 0, 0.5);
+      border-color: rgba(255, 255, 255, 0.3);
     }
 
     /* Waiting Room */
