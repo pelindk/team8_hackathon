@@ -492,21 +492,23 @@ function startNextTournamentMatches(tournamentId) {
         currentMatch: match
       });
 
-      // Send GAME_START to the actual players in the match
-      io.to(match.player1.id).emit(MESSAGE_TYPES.GAME_START, {
+      // Send GAME_STATE to the actual players in the match
+      io.to(match.player1.id).emit(MESSAGE_TYPES.GAME_STATE, {
         gameId: gameId,
+        mode: 'tournament',
         opponent: match.player2.name,
-        isAI: match.player2.isAI,
-        winCondition: tournament.settings.winCondition,
+        yourName: match.player1.name,
+        state: 'playing',
         isTournament: true
       });
 
       if (!match.player2.isAI) {
-        io.to(match.player2.id).emit(MESSAGE_TYPES.GAME_START, {
+        io.to(match.player2.id).emit(MESSAGE_TYPES.GAME_STATE, {
           gameId: gameId,
+          mode: 'tournament',
           opponent: match.player1.name,
-          isAI: false,
-          winCondition: tournament.settings.winCondition,
+          yourName: match.player2.name,
+          state: 'playing',
           isTournament: true
         });
       }
